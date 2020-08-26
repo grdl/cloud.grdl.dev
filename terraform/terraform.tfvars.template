@@ -1,0 +1,5 @@
+scaleway_organization_id = ""
+scaleway_access_key      = ""
+scaleway_secret_key      = ""
+cloudflare_email         = ""
+cloudflare_api_key       = "" 
