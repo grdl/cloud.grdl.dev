@@ -17,8 +17,6 @@ If you use Terraform Cloud to store the state run `terraform login` first.
 
 If you don't want to use Terraform Cloud, remove the `backend.tf` file. This will set Terraform to use the default local state file.
 
-When running locally, Terraform will create a `kube.config` file in the current directory. When using Terraform Cloud this won't happen so you need to download the `kube.config` file manually from Scaleway.
-
 ### Run
 
 ```

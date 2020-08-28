@@ -28,13 +28,6 @@ resource "scaleway_k8s_pool_beta" "pool" {
   autohealing = true
 }
 
-# Write kube config of the new cluster to local file
-resource "local_file" "kubeconfig" {
-  content         = scaleway_k8s_cluster_beta.cluster.kubeconfig[0].config_file
-  filename        = "${path.module}/kube.config"
-  file_permission = "0600"
-}
-
 # Create Cloudflare provider
 provider "cloudflare" {
   version = "~> 2.0"
