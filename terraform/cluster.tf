@@ -93,7 +93,21 @@ resource "helm_release" "argocd" {
 
   # Change the default argo admin password
   set {
-    name = "configs.secret.argocdServerAdminPassword"
+    name  = "configs.secret.argocdServerAdminPassword"
     value = bcrypt(var.argo_password)
-  }  
+  }
 }
+
+
+# Crate the app-of-apps Helm release to bootstrap the cluster
+# See https://argoproj.github.io/argo-cd/operator-manual/cluster-bootstrapping/#app-of-apps-pattern
+#
+# Using a separate helm_release here wouldn't be necessary if `.Values.server.additionalApplications` worked in argocd helm chart.
+# See https://github.com/argoproj/argo-helm/blob/master/charts/argo-cd/templates/argocd-server/applications.yaml
+resource "helm_release" "app-of-apps" {
+  name       = "app-of-apps"
+  namespace  = "argocd"
+  chart      = "./app-of-apps"
+  depends_on = [helm_release.argocd]
+}
+
