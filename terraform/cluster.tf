@@ -65,12 +65,42 @@ resource "cloudflare_record" "k8s_cname_wildard" {
   type    = "CNAME"
 }
 
-# Create Kubernetes provider
-provider "kubernetes" {
-  host  = scaleway_k8s_cluster_beta.cluster.kubeconfig[0].host
-  token = scaleway_k8s_cluster_beta.cluster.kubeconfig[0].token
-  cluster_ca_certificate = base64decode(
-    scaleway_k8s_cluster_beta.cluster.kubeconfig[0].cluster_ca_certificate
-  )
-  load_config_file = false
+# Create Helm provider
+provider "helm" {
+  kubernetes {
+    host  = scaleway_k8s_cluster_beta.cluster.kubeconfig[0].host
+    token = scaleway_k8s_cluster_beta.cluster.kubeconfig[0].token
+    cluster_ca_certificate = base64decode(
+      scaleway_k8s_cluster_beta.cluster.kubeconfig[0].cluster_ca_certificate
+    )
+    load_config_file = false
+  }
+}
+
+# Create ArgoCD Helm release
+resource "helm_release" "argocd" {
+  repository = "https://argoproj.github.io/argo-helm"
+  chart      = "argo-cd"
+  version    = "2.6.0"
+  name       = "argocd"
+  namespace  = "argocd"
+  create_namespace = true
+
+  # We're using Helm 3 so we don't need to explicitly install CRDs
+  set {
+    name  = "installCRDs"
+    value = false
+  }
+  
+  # We don't need Dex
+  set {
+    name  = "dex.enabled"
+    value = false
+  }
+
+  # Change the default argo admin password
+  set {
+    name = "configs.secret.argocdServerAdminPassword"
+    value = bcrypt(var.argo_password)
+  }  
 }
