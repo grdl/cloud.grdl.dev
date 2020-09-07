@@ -121,6 +121,27 @@ resource "helm_release" "argocd" {
         secretName: argocd-secret
     - name: keyring
       emptyDir: {}
+  
+  # Define the app-of-apps to bootstrap other apps in the cluster
+  # See https://argoproj.github.io/argo-cd/operator-manual/cluster-bootstrapping/
+  server:
+    additionalApplications:
+    - name: app-of-apps
+      namespace: argocd
+      additionalLabels: {}
+      additionalAnnotations: {}
+      project: default
+      source:
+        repoURL: https://github.com/grdl/cloud.grdl.dev.git
+        targetRevision: HEAD
+        path: applications
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
   EOT
   ]
 }

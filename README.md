@@ -24,3 +24,22 @@ terraform init
 terraform plan
 terraform apply
 ```
+
+
+# Secrets
+
+Generate a PGP key:
+```
+gpg --gen-key
+```
+
+Export the private key:
+```
+gpg --armor --export-secret-key key > key.priv
+```
+
+Import the key:
+```
+gpg --import key.file
+```
+
