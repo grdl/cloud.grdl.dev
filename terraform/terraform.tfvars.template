@@ -4,3 +4,10 @@ scaleway_secret_key      = ""
 cloudflare_email         = ""
 cloudflare_api_key       = "" 
 argo_password            = ""
+argo_sops_key            = <<EOT
+-----BEGIN PGP PRIVATE KEY BLOCK-----
+
+abc
+
+-----END PGP PRIVATE KEY BLOCK-----
+EOT

@@ -35,3 +35,6 @@ variable "domain_name" {
 
 variable "argo_password" {
 }
+
+variable "argo_sops_key" {
+}

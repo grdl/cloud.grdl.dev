@@ -70,44 +70,57 @@ provider "helm" {
   }
 }
 
-# Create ArgoCD Helm release
 resource "helm_release" "argocd" {
   repository = "https://argoproj.github.io/argo-helm"
   chart      = "argo-cd"
-  version    = "2.6.0"
+  version    = "2.6.3"
   name       = "argocd"
   namespace  = "argocd"
   create_namespace = true
 
-  # We're using Helm 3 so we don't need to explicitly install CRDs
-  set {
-    name  = "installCRDs"
-    value = false
-  }
-  
-  # We don't need Dex
-  set {
-    name  = "dex.enabled"
-    value = false
-  }
+# TODO: Move values into a separate yaml file
 
-  # Change the default argo admin password
-  set {
-    name  = "configs.secret.argocdServerAdminPassword"
-    value = bcrypt(var.argo_password)
-  }
+  values = [
+  <<-EOT
+  # Don't use the Helm v2 hook to install CRDs when running Helm v3
+  installCRDs: false
+  dex:
+    enabled: false
+  configs:
+    secret:
+      argocdServerAdminPassword: "${bcrypt(var.argo_password)}"
+      extra:
+        sopsKey: |
+          ${indent(8, var.argo_sops_key)}
+
+  # Use our custom argocd image with sops and helm-secrets installed
+  repoServer:
+    image:
+      repository: grdl/argocd
+      tag: v1.7.4
+
+    # Init container imports the sopsKey PGP key from secret into argocd's keyring.
+    initContainers:
+    - name: import-sops-key
+      image: grdl/argocd:v1.7.4
+      command: ['gpg', '--import', '/home/argocd/argocd-secret/sopsKey']  
+      volumeMounts:
+      - name: argocd-secret
+        mountPath: /home/argocd/argocd-secret
+        readOnly: true
+      - name: keyring
+        mountPath: /home/argocd/.gnupg
+
+    volumeMounts:
+    - name: keyring
+      mountPath: /home/argocd/.gnupg
+
+    volumes:
+    - name: argocd-secret
+      secret:
+        secretName: argocd-secret
+    - name: keyring
+      emptyDir: {}
+  EOT
+  ]
 }
-
-
-# Crate the app-of-apps Helm release to bootstrap the cluster
-# See https://argoproj.github.io/argo-cd/operator-manual/cluster-bootstrapping/#app-of-apps-pattern
-#
-# Using a separate helm_release here wouldn't be necessary if `.Values.server.additionalApplications` worked in argocd helm chart.
-# See https://github.com/argoproj/argo-helm/blob/master/charts/argo-cd/templates/argocd-server/applications.yaml
-resource "helm_release" "app-of-apps" {
-  name       = "app-of-apps"
-  namespace  = "argocd"
-  chart      = "./app-of-apps"
-  depends_on = [helm_release.argocd]
-}
-
