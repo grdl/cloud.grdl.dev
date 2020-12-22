@@ -14,8 +14,8 @@ crash.log
 #
 # example.tfvars
 
-# Ignore .tevars file with secrets
-terraform.tfvars
+# Ignore the decrypted .tevars file with secrets
+terraform.auto.tfvars
 
 
 # Ignore override files as they are usually used to override resources locally and so

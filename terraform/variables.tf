@@ -32,9 +32,3 @@ variable "cloudflare_api_key" {
 variable "domain_name" {
   default = "cloud.grdl.dev"
 }
-
-variable "argo_password" {
-}
-
-variable "argo_sops_key" {
-}
