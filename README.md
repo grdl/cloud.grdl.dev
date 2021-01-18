@@ -26,3 +26,20 @@ terraform plan
 terraform apply
 ```
 
+# Helm
+
+### Requirements
+
+```
+helm
+helm plugin install https://github.com/databus23/helm-diff
+helm plugin install https://github.com/zendesk/helm-secrets
+helmfile
+```
+
+### Install Helm charts
+
+```
+helmfile sync
+```
+
