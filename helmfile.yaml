@@ -1,0 +1,33 @@
+repositories:
+- name: appscode
+  url: https://charts.appscode.com/stable
+- name: jetstack
+  url: https://charts.jetstack.io
+
+releases:
+- name: cert-manager
+  namespace: cert-manager
+  chart: jetstack/cert-manager
+  version: v1.1.0
+  values:
+  - installCRDs: true
+
+- name: kubed
+  namespace: cert-manager
+  chart: appscode/kubed
+  version: v0.12.0
+  values:
+  - config:
+      configSourceNamespace: cert-manager
+
+- name: certificates
+  namespace: cert-manager
+  chart: ./helm/certificates
+  secrets:
+  - secrets.yaml
+  needs:
+  - cert-manager/cert-manager
+
+- name: testsite
+  namespace: testsite
+  chart: ./helm/testsite
